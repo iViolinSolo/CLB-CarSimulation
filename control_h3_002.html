@@ -1,0 +1,102 @@
+<html>
+    <body>
+        <button onclick=""> -- </button>
+        <button onclick="f1()"> W </button>
+        <button onclick=""> -- </button>
+        <br/>
+        <button onclick="f3()"> A </button>
+        <button onclick="f2()"> S </button>
+        <button onclick="f4()"> D </button>
+        <br/>
+        <button onclick="f5()"> STOP </button>
+
+        <br>
+        <br>
+        <br>
+        <p>Speed: <span id='span_speed'>0</span> units</p> <input id="range_speed" type="range" min="-99" max="99" value="0" oninput="fspc()" style="width:400px"/>
+        <p>Steering Wheel: <span id='span_sw'>0</span> °</p> <input id="range_sw" type="range" min="-540" max="540" value="0" oninput="fswc()" style="width:400px"/>
+
+    </body>
+    <script>
+        function timedGetText( url, time, callback ){
+            var request = new XMLHttpRequest();
+            var timeout = false;
+            var timer = setTimeout( function(){
+                timeout = true;
+                request.abort();
+            }, time );
+            request.open( "GET", url );
+            request.onreadystatechange = function(){
+                if( request.readyState !== 4 ) return;
+                if( timeout ) return;
+                clearTimeout( timer );
+                if( request.status === 200 ){
+                    callback( request.responseText );
+                }
+            }
+            request.send( null );
+        }
+
+        let f1 = () =>{
+            timedGetText('http://127.0.0.1:5000/forward/50/0.5', 2, function(){});
+        };
+        let f2 = () =>{
+            timedGetText('http://127.0.0.1:5000/backward/50/0.5', 2, function(){});
+        };
+        let f3 = () =>{
+            timedGetText('http://127.0.0.1:5000/leftward/50/0.5', 2, function(){});
+        };
+        let f4 = () =>{
+            timedGetText('http://127.0.0.1:5000/rightward/50/0.5', 2, function(){});
+        };
+        let f5 = () =>{
+            timedGetText('http://127.0.0.1:5000/stop', 2, function(){});
+        };
+
+        document.onkeydown = function(e){
+            //var e=arguments[0]||window.event;
+            e=e||window.event;
+            switch(e.keyCode){
+                    case 87: //w
+                    console.log('w');
+                    f1();
+                    break;
+                    case 65: //a
+                    console.log('a');
+                    f3();
+                    break;
+                    case 83: //s
+                    console.log('s');
+                    f2();
+                    break;
+                    case 68: //d
+                    console.log('d');
+                    f4();
+                    break;
+                }
+        };
+    
+        let fspc = () => {
+            let speed = document.getElementById('range_speed').value;
+            console.log('current speed: '+speed)
+            document.getElementById('span_speed').innerHTML = speed;
+
+            if(speed >0)
+            {
+                timedGetText('http://127.0.0.1:5000/vm/acc/'+speed, 2, function(){});
+            }
+            else if(speed<0) 
+            {
+                timedGetText('http://127.0.0.1:5000/vm/rev/'+(-speed), 2, function(){});
+            }
+        }
+        let fswc = () => {
+            let angle = document.getElementById('range_sw').value;
+            console.log('current steering angle: '+angle)
+            document.getElementById('span_sw').innerHTML = angle;
+
+            timedGetText('http://127.0.0.1:5000/vm/sw?angle='+(angle), 2, function(){});
+        }
+    
+    </script>
+</html>
